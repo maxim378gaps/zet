@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Jet</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Прелоадер -->
+    <div id="preloader">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Фон с звездочками -->
+    <div id="stars-container"></div>
+
+    <!-- Переключение языка и меню -->
+    <div class="top-bar">
+        <div class="language-switcher">
+            <button onclick="toggleLanguageDropdown()">
+                <img id="flag-icon" src="https://flagcdn.com/ru.svg" alt="RU">
+                <span id="language-button">RU ▼</span>
+            </button>
+            <div class="dropdown">
+                <button onclick="setLanguage('ru')">
+                    <img src="https://flagcdn.com/ru.svg" alt="RU">
+                    RU
+                </button>
+                <button onclick="setLanguage('en')">
+                    <img src="https://flagcdn.com/us.svg" alt="EN">
+                    EN
+                </button>
+                <button onclick="setLanguage('in')">
+                    <img src="https://flagcdn.com/in.svg" alt="IN">
+                    IN
+                </button>
+            </div>
+        </div>
+
+        <!-- Кнопка меню -->
+        <button class="menu-button" id="menu-button" onclick="window.location.href = 'https://maxim378gaps.github.io/hall/'">Меню</button>
+    </div>
+
+    <div class="container">
+        <!-- Заголовок -->
+        <h1 class="glowing-title" data-key="title">LUCKY JET</h1>
+
+        <!-- Круг с множителем -->
+        <div class="circle">
+            <span id="multiplier"></span>
+            <div class="circle-glow"></div>
+            <div class="win-chance-container">
+                <div class="win-chance-label" data-key="chance_label">Шанс</div>
+                <div id="win-chance" class="win-chance" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Кнопка и прогресс-бар -->
+        <div class="button-container">
+            <button id="getSignalButton" data-key="get_signal_button">ПОЛУЧИТЬ СИГНАЛ</button>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div id="status-text" class="status-text"></div>
+        </div>
+    </div>
+
+    <!-- Аудио -->
+    <audio id="clickSound" src="click.mp3"></audio>
+    <audio id="completeSound" src="complete.mp3"></audio>
+
+    <script src="script.js"></script>
+</body>
+</html>

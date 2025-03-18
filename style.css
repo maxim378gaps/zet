@@ -1,0 +1,367 @@
+/* Основные стили */
+body {
+    background: #0a192f; /* Темно-синий фон */
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Прелоадер */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a192f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.loader {
+    border: 4px solid #00bfff;
+    border-top: 4px solid transparent;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Фон с звездочками */
+#stars-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 2s infinite;
+    z-index: -1;
+}
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Верхняя панель */
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: rgba(10, 25, 47, 0.8);
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+/* Кнопка меню */
+.menu-button {
+    background: linear-gradient(90deg, #007bff, #00bfff);
+    border: none;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    white-space: nowrap; /* Предотвращает перенос текста */
+    width: auto;
+    max-width: 70%;
+    margin-left: 15px;
+    margin-right: 17px;
+}
+
+.menu-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Контейнер */
+.container {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* Заголовок */
+.glowing-title {
+    font-size: 36px;
+    margin-bottom: 40px;
+    color: #00bfff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    0% {
+        text-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
+    }
+    100% {
+        text-shadow: 0 0 20px rgba(0, 191, 255, 0.8);
+    }
+}
+
+/* Круг с множителем */
+.circle {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(31, 31, 31, 0.8);
+    border: 4px solid #00bfff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 40px;
+    box-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+    animation: pulse 2s infinite;
+    overflow: hidden;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.circle span {
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+}
+
+/* Шанс выигрыша */
+.win-chance-container {
+    position: absolute;
+    bottom: 20px;
+    text-align: center;
+}
+
+.win-chance-label {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 2px;
+    display: none;
+}
+
+.win-chance {
+    font-size: 14px;
+    color: white;
+    display: none;
+}
+
+/* Сияние вокруг круга */
+.circle-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 191, 255, 0.3), transparent 70%);
+    animation: glow-circle 3s infinite alternate;
+}
+
+@keyframes glow-circle {
+    0% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Контейнер для кнопка и прогресс-бара */
+.button-container {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* Кнопка */
+button {
+    background: linear-gradient(90deg, #007bff, #00bfff);
+    border: none;
+    color: #fff;
+    padding: 15px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: transform 0.3s ease;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+button:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+/* Прогресс-бар */
+.progress-bar {
+    position: relative;
+    width: 100%;
+    height: 10px;
+    background: rgba(0, 191, 255, 0.2);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #007bff, #00bfff);
+    border-radius: 5px;
+}
+
+.status-text {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #fff;
+    text-align: center;
+    display: none;
+}
+
+/* Переключение языка */
+.language-switcher {
+    position: relative;
+}
+
+.language-switcher button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.language-switcher button img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.language-switcher .dropdown {
+    display: none;
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background: rgba(31, 31, 31, 0.9);
+    border: 1px solid #00bfff;
+    border-radius: 10px;
+    padding: 10px;
+    z-index: 1000;
+}
+
+.language-switcher .dropdown button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    padding: 5px;
+    text-align: left;
+}
+
+.language-switcher .dropdown button:hover {
+    background: rgba(0, 191, 255, 0.2);
+}
+
+.language-switcher.active .dropdown {
+    display: block;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+    .glowing-title {
+        font-size: 28px;
+    }
+
+    .circle {
+        width: 150px;
+        height: 150px;
+    }
+
+    .circle span {
+        font-size: 24px;
+    }
+
+    .win-chance-label {
+        font-size: 10px;
+    }
+
+    .win-chance {
+        font-size: 12px;
+    }
+
+    button {
+        font-size: 16px;
+        padding: 12px 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .glowing-title {
+        font-size: 24px;
+    }
+
+    .circle {
+        width: 120px;
+        height: 120px;
+    }
+
+    .circle span {
+        font-size: 20px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+}

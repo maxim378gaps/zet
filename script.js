@@ -225,7 +225,7 @@ function setLanguage(lang) {
     languageButton.textContent = lang.toUpperCase() + ' ▼';
 
     const flagIcon = document.getElementById('flag-icon');
-    flagIcon.src = `https://flagcdn.com/${lang === 'ru' ? 'ru' : lang === 'en' ? 'us' : 'in'}.svg`;
+    flagIcon.src = `flags/${lang === 'ru' ? 'ru' : lang === 'en' ? 'us' : 'in'}.svg`;
 
     updateTexts(lang);
     document.querySelector('.language-switcher').classList.remove('active');
@@ -236,10 +236,8 @@ function setLanguage(lang) {
 function updateStatusText() {
     if (isProgressRunning) {
         statusText.textContent = translations[currentLang].status_waiting;
-    }
-
-    else {
-        statusText.textContent = translations[currentLang.status_ready];
+    } else {
+        statusText.textContent = translations[currentLang].status_ready;
     }
 }
 

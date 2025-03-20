@@ -8,6 +8,7 @@ const clickSound = document.getElementById('clickSound');
 const completeSound = document.getElementById('completeSound');
 const menuButton = document.getElementById('menu-button');
 const statusText = document.getElementById('status-text');
+const progressBar = document.querySelector('.progress-bar');
 
 // Данные для перевода
 const translations = {
@@ -45,39 +46,62 @@ let isProgressRunning = localStorage.getItem('isProgressRunning') === 'true';
 let progressStartTime = parseInt(localStorage.getItem('progressStartTime')) || 0;
 const progressDuration = 60000; // 60 секунд
 
+// Сохранение множителя и шанса
+let currentMultiplier = localStorage.getItem('currentMultiplier') || '';
+let currentWinChance = localStorage.getItem('currentWinChance') || '';
+
+// Функция для плавной генерации множителя
+function generateMultiplier() {
+    const minMultiplier = 1.0;
+    const maxMultiplier = 10.0;
+    return (Math.random() * (maxMultiplier - minMultiplier) + minMultiplier).toFixed(2);
+}
+
+// Функция для расчета шанса в зависимости от множителя
+function calculateWinChance(multiplier) {
+    if (multiplier >= 1.00 && multiplier <= 4.00) {
+        return (Math.random() * (97.00 - 90.00) + 90.00).toFixed(2);
+    } else if (multiplier > 4.00 && multiplier <= 10.00) {
+        return (Math.random() * (89.00 - 70.00) + 70.00).toFixed(2);
+    }
+    return 0.00;
+}
+
+// Функция для плавного изменения множителя
+function animateMultiplier(targetMultiplier, duration = 1000) {
+    const startMultiplier = 1.00;
+    const startTime = Date.now();
+
+    function update() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const currentMultiplier = startMultiplier + (targetMultiplier - startMultiplier) * progress;
+        multiplierElement.textContent = `${currentMultiplier.toFixed(2)}x`;
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            const winChance = calculateWinChance(targetMultiplier);
+            winChanceElement.textContent = `${winChance}%`;
+            winChanceLabel.style.display = 'block';
+            winChanceElement.style.display = 'block';
+
+            // Сохраняем множитель и шанс
+            localStorage.setItem('currentMultiplier', targetMultiplier);
+            localStorage.setItem('currentWinChance', winChance);
+        }
+    }
+    requestAnimationFrame(update);
+}
+
 // Функция для обновления текстов
 function updateTexts(lang) {
     document.querySelectorAll('[data-key]').forEach(element => {
         const key = element.getAttribute('data-key');
         element.textContent = translations[lang][key];
     });
-    menuButton.textContent = translations[lang].menu_button; // Обновляем текст кнопки меню
-}
-
-// Функция для генерации случайного множителя
-function generateMultiplier() {
-    const steps = 20;
-    const targetMultiplier = Math.random() < 0.8 ?
-        (Math.random() * (4.00 - 1.00) + 1.00).toFixed(2) :
-        (Math.random() * (15.00 - 4.00) + 4.00).toFixed(2);
-
-    let currentStep = 0;
-    const interval = setInterval(() => {
-        if (currentStep >= steps) {
-            clearInterval(interval);
-            multiplierElement.textContent = targetMultiplier;
-        } else {
-            const progress = currentStep / steps;
-            const currentMultiplier = (1 + (targetMultiplier - 1) * progress).toFixed(2);
-            multiplierElement.textContent = currentMultiplier;
-            currentStep++;
-        }
-    }, 100);
-}
-
-// Функция для генерации шанса выигрыша
-function generateWinChance() {
-    return (Math.random() * (97.00 - 93.00) + 93.00).toFixed(2);
+    menuButton.textContent = translations[lang].menu_button;
+    statusText.textContent = translations[lang].status_ready;
 }
 
 // Функция для запуска анимации прогресса
@@ -87,7 +111,6 @@ function startProgressAnimation() {
     localStorage.setItem('isProgressRunning', 'true');
     localStorage.setItem('progressStartTime', progressStartTime);
 
-    // Показываем текст "Сигнал будет доступен, когда заполнится шкала"
     statusText.textContent = translations[currentLang].status_waiting;
     statusText.style.display = 'block';
 
@@ -102,15 +125,21 @@ function startProgressAnimation() {
             isProgressRunning = false;
             localStorage.setItem('isProgressRunning', 'false');
             getSignalButton.disabled = false;
-            resetProgress();
-            completeSound.play();
-            multiplierElement.textContent = ''; // Очищаем множитель
-            winChanceElement.textContent = ''; // Очищаем шанс
-            winChanceLabel.style.display = 'none'; // Скрываем текст "Шанс"
-            winChanceElement.style.display = 'none'; // Скрываем значение шанса
 
-            // Меняем текст на "Вы снова можете получить сигнал"
+            progressBar.classList.add('complete');
+            setTimeout(() => progressBar.classList.remove('complete'), 1000);
+
+            progressFill.style.transition = 'none';
+            progressFill.style.width = '0';
+            progressBar.style.display = 'none';
+
             statusText.textContent = translations[currentLang].status_ready;
+
+            // Скрываем множитель и шанс
+            multiplierElement.textContent = '';
+            winChanceElement.textContent = '';
+            winChanceLabel.style.display = 'none';
+            winChanceElement.style.display = 'none';
         }
     }
     requestAnimationFrame(animate);
@@ -118,45 +147,40 @@ function startProgressAnimation() {
 
 // Функция для сброса прогресса
 function resetProgress() {
-    progressFill.style.transition = 'none';
     progressFill.style.width = '0';
 }
 
-// Обработчик нажатия на кнопку
-getSignalButton.addEventListener('click', () => {
-    if (isProgressRunning) return; // Если прогресс уже идет, ничего не делаем
-
-    clickSound.play();
-    const winChance = generateWinChance();
-    winChanceElement.textContent = `${winChance}%`;
-
-    // Показываем текст "Шанс" и значение шанса
-    winChanceLabel.style.display = 'block';
-    winChanceElement.style.display = 'block';
-
-    getSignalButton.disabled = true;
-    resetProgress();
-    generateMultiplier();
-    startProgressAnimation();
-});
-
-// Восстановление состояния прогресса при загрузке страницы
-window.addEventListener('load', () => {
+// Инициализация после загрузки DOM
+document.addEventListener('DOMContentLoaded', () => {
     const preloader = document.getElementById('preloader');
-    preloader.style.display = 'none';
+    if (preloader) {
+        preloader.style.display = 'none';
+    }
+
+    // Восстановление множителя и шанса
+    if (currentMultiplier) {
+        multiplierElement.textContent = `${currentMultiplier}x`;
+    }
+    if (currentWinChance) {
+        winChanceElement.textContent = `${currentWinChance}%`;
+        winChanceLabel.style.display = 'block';
+        winChanceElement.style.display = 'block';
+    }
 
     if (isProgressRunning) {
         const elapsed = Date.now() - progressStartTime;
         if (elapsed < progressDuration) {
             const remainingTime = progressDuration - elapsed;
+
             progressFill.style.width = `${(elapsed / progressDuration) * 100}%`;
+
+            setTimeout(() => {
+                progressFill.style.transition = `width ${remainingTime}ms linear`;
+                progressFill.style.width = '100%';
+            }, 10);
+
             getSignalButton.disabled = true;
 
-            // Запуск анимации для оставшегося времени
-            progressFill.style.transition = `width ${remainingTime}ms linear`;
-            progressFill.style.width = '100%';
-
-            // Показываем текст "Сигнал будет доступен, когда заполнится шкала"
             statusText.textContent = translations[currentLang].status_waiting;
             statusText.style.display = 'block';
 
@@ -164,31 +188,73 @@ window.addEventListener('load', () => {
                 isProgressRunning = false;
                 localStorage.setItem('isProgressRunning', 'false');
                 getSignalButton.disabled = false;
-                resetProgress();
 
-                // Меняем текст на "Вы снова можете получить сигнал"
+                progressFill.style.transition = 'none';
+                progressFill.style.width = '0';
+                progressBar.style.display = 'none';
+
                 statusText.textContent = translations[currentLang].status_ready;
+
+                // Скрываем множитель и шанс
+                multiplierElement.textContent = '';
+                winChanceElement.textContent = '';
+                winChanceLabel.style.display = 'none';
+                winChanceElement.style.display = 'none';
             }, remainingTime);
         } else {
             isProgressRunning = false;
             localStorage.setItem('isProgressRunning', 'false');
             getSignalButton.disabled = false;
-            resetProgress();
 
-            // Меняем текст на "Вы снова можете получить сигнал"
+            progressFill.style.transition = 'none';
+            progressFill.style.width = '0';
+            progressBar.style.display = 'none';
+
             statusText.textContent = translations[currentLang].status_ready;
             statusText.style.display = 'block';
+
+            // Скрываем множитель и шанс
+            multiplierElement.textContent = '';
+            winChanceElement.textContent = '';
+            winChanceLabel.style.display = 'none';
+            winChanceElement.style.display = 'none';
         }
     } else {
-        // Если прогресс не запущен, показываем текст "Вы снова можете получить сигнал"
         statusText.textContent = translations[currentLang].status_ready;
         statusText.style.display = 'block';
+
+        progressBar.style.display = 'none';
     }
+
+    createStars();
+});
+
+// Обработчик нажатия на кнопку
+getSignalButton.addEventListener('click', () => {
+    if (isProgressRunning) return;
+
+    clickSound.play();
+
+    // Очищаем сохраненные данные при начале нового цикла
+    localStorage.removeItem('currentMultiplier');
+    localStorage.removeItem('currentWinChance');
+
+    const targetMultiplier = generateMultiplier();
+    animateMultiplier(targetMultiplier);
+
+    getSignalButton.disabled = true;
+
+    progressBar.style.display = 'block';
+    resetProgress();
+
+    startProgressAnimation();
 });
 
 // Создание звездочек
 function createStars() {
     const starsContainer = document.getElementById('stars-container');
+    if (!starsContainer) return;
+
     const starCount = 50;
     const circle = document.querySelector('.circle');
     const circleRect = circle.getBoundingClientRect();
@@ -215,8 +281,6 @@ function createStars() {
     }
 }
 
-createStars();
-
 // Переключение языка
 function setLanguage(lang) {
     currentLang = lang;
@@ -229,16 +293,6 @@ function setLanguage(lang) {
 
     updateTexts(lang);
     document.querySelector('.language-switcher').classList.remove('active');
-
-    updateStatusText();
-}
-
-function updateStatusText() {
-    if (isProgressRunning) {
-        statusText.textContent = translations[currentLang].status_waiting;
-    } else {
-        statusText.textContent = translations[currentLang].status_ready;
-    }
 }
 
 function toggleLanguageDropdown() {

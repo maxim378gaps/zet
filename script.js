@@ -50,24 +50,28 @@ const progressDuration = 60000; // 60 секунд
 let currentMultiplier = localStorage.getItem('currentMultiplier') || '';
 let currentWinChance = localStorage.getItem('currentWinChance') || '';
 
-// Функция для плавной генерации множителя
+// Генерация множителя (80% - 1.00-3.00, 20% - 3.01-10.00)
 function generateMultiplier() {
-    const minMultiplier = 1.0;
-    const maxMultiplier = 10.0;
-    return (Math.random() * (maxMultiplier - minMultiplier) + minMultiplier).toFixed(2);
-}
-
-// Функция для расчета шанса в зависимости от множителя
-function calculateWinChance(multiplier) {
-    if (multiplier >= 1.00 && multiplier <= 4.00) {
-        return (Math.random() * (97.00 - 90.00) + 90.00).toFixed(2);
-    } else if (multiplier > 4.00 && multiplier <= 10.00) {
-        return (Math.random() * (89.00 - 70.00) + 70.00).toFixed(2);
+    const random = Math.random();
+    if (random < 0.8) {
+        return (Math.random() * 2 + 1).toFixed(2); // 1.00 - 3.00 (80%)
+    } else {
+        return (Math.random() * 7 + 3).toFixed(2); // 3.01 - 10.00 (20%)
     }
-    return 0.00;
 }
 
-// Функция для плавного изменения множителя
+// Расчёт шанса выигрыша (теперь строже для высоких множителей)
+function calculateWinChance(multiplier) {
+    multiplier = parseFloat(multiplier);
+    if (multiplier <= 1.5) return (Math.random() * 3 + 97).toFixed(2); // 97-100%
+    if (multiplier <= 2.0) return (Math.random() * 5 + 92).toFixed(2);  // 92-97%
+    if (multiplier <= 3.0) return (Math.random() * 8 + 84).toFixed(2); // 84-92%
+    if (multiplier <= 5.0) return (Math.random() * 10 + 70).toFixed(2); // 70-80%
+    return (Math.random() * 15 + 50).toFixed(2); // 50-65% (для 5.01-10.00)
+}
+
+
+// Плавная анимация множителя
 function animateMultiplier(targetMultiplier, duration = 1000) {
     const startMultiplier = 1.00;
     const startTime = Date.now();
@@ -85,8 +89,6 @@ function animateMultiplier(targetMultiplier, duration = 1000) {
             winChanceElement.textContent = `${winChance}%`;
             winChanceLabel.style.display = 'block';
             winChanceElement.style.display = 'block';
-
-            // Сохраняем множитель и шанс
             localStorage.setItem('currentMultiplier', targetMultiplier);
             localStorage.setItem('currentWinChance', winChance);
         }
@@ -94,7 +96,7 @@ function animateMultiplier(targetMultiplier, duration = 1000) {
     requestAnimationFrame(update);
 }
 
-// Функция для обновления текстов
+// Обновление текстов при смене языка
 function updateTexts(lang) {
     document.querySelectorAll('[data-key]').forEach(element => {
         const key = element.getAttribute('data-key');
@@ -104,7 +106,7 @@ function updateTexts(lang) {
     statusText.textContent = translations[lang].status_ready;
 }
 
-// Функция для запуска анимации прогресса
+// Запуск анимации прогресс-бара
 function startProgressAnimation() {
     isProgressRunning = true;
     progressStartTime = Date.now();
@@ -125,17 +127,8 @@ function startProgressAnimation() {
             isProgressRunning = false;
             localStorage.setItem('isProgressRunning', 'false');
             getSignalButton.disabled = false;
-
-            progressBar.classList.add('complete');
-            setTimeout(() => progressBar.classList.remove('complete'), 1000);
-
-            progressFill.style.transition = 'none';
             progressFill.style.width = '0';
-            progressBar.style.display = 'none';
-
             statusText.textContent = translations[currentLang].status_ready;
-
-            // Скрываем множитель и шанс
             multiplierElement.textContent = '';
             winChanceElement.textContent = '';
             winChanceLabel.style.display = 'none';
@@ -145,112 +138,7 @@ function startProgressAnimation() {
     requestAnimationFrame(animate);
 }
 
-// Функция для сброса прогресса
-function resetProgress() {
-    progressFill.style.width = '0';
-}
-
-// Инициализация после загрузки DOM
-document.addEventListener('DOMContentLoaded', () => {
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-        preloader.style.display = 'none';
-    }
-
-    // Восстановление множителя и шанса
-    if (currentMultiplier) {
-        multiplierElement.textContent = `${currentMultiplier}x`;
-    }
-    if (currentWinChance) {
-        winChanceElement.textContent = `${currentWinChance}%`;
-        winChanceLabel.style.display = 'block';
-        winChanceElement.style.display = 'block';
-    }
-
-    if (isProgressRunning) {
-        const elapsed = Date.now() - progressStartTime;
-        if (elapsed < progressDuration) {
-            const remainingTime = progressDuration - elapsed;
-
-            progressFill.style.width = `${(elapsed / progressDuration) * 100}%`;
-
-            setTimeout(() => {
-                progressFill.style.transition = `width ${remainingTime}ms linear`;
-                progressFill.style.width = '100%';
-            }, 10);
-
-            getSignalButton.disabled = true;
-
-            statusText.textContent = translations[currentLang].status_waiting;
-            statusText.style.display = 'block';
-
-            setTimeout(() => {
-                isProgressRunning = false;
-                localStorage.setItem('isProgressRunning', 'false');
-                getSignalButton.disabled = false;
-
-                progressFill.style.transition = 'none';
-                progressFill.style.width = '0';
-                progressBar.style.display = 'none';
-
-                statusText.textContent = translations[currentLang].status_ready;
-
-                // Скрываем множитель и шанс
-                multiplierElement.textContent = '';
-                winChanceElement.textContent = '';
-                winChanceLabel.style.display = 'none';
-                winChanceElement.style.display = 'none';
-            }, remainingTime);
-        } else {
-            isProgressRunning = false;
-            localStorage.setItem('isProgressRunning', 'false');
-            getSignalButton.disabled = false;
-
-            progressFill.style.transition = 'none';
-            progressFill.style.width = '0';
-            progressBar.style.display = 'none';
-
-            statusText.textContent = translations[currentLang].status_ready;
-            statusText.style.display = 'block';
-
-            // Скрываем множитель и шанс
-            multiplierElement.textContent = '';
-            winChanceElement.textContent = '';
-            winChanceLabel.style.display = 'none';
-            winChanceElement.style.display = 'none';
-        }
-    } else {
-        statusText.textContent = translations[currentLang].status_ready;
-        statusText.style.display = 'block';
-
-        progressBar.style.display = 'none';
-    }
-
-    createStars();
-});
-
-// Обработчик нажатия на кнопку
-getSignalButton.addEventListener('click', () => {
-    if (isProgressRunning) return;
-
-    clickSound.play();
-
-    // Очищаем сохраненные данные при начале нового цикла
-    localStorage.removeItem('currentMultiplier');
-    localStorage.removeItem('currentWinChance');
-
-    const targetMultiplier = generateMultiplier();
-    animateMultiplier(targetMultiplier);
-
-    getSignalButton.disabled = true;
-
-    progressBar.style.display = 'block';
-    resetProgress();
-
-    startProgressAnimation();
-});
-
-// Создание звездочек
+// Создание звёзд на фоне
 function createStars() {
     const starsContainer = document.getElementById('stars-container');
     if (!starsContainer) return;
@@ -268,10 +156,10 @@ function createStars() {
             x = Math.random() * window.innerWidth;
             y = Math.random() * window.innerHeight;
         } while (
-            x > circleRect.left &&
-            x < circleRect.right &&
-            y > circleRect.top &&
-            y < circleRect.bottom
+            x > circleRect.left - 50 &&
+            x < circleRect.right + 50 &&
+            y > circleRect.top - 50 &&
+            y < circleRect.bottom + 50
         );
 
         star.style.top = `${y}px`;
@@ -285,27 +173,78 @@ function createStars() {
 function setLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('language', lang);
-    const languageButton = document.getElementById('language-button');
-    languageButton.textContent = lang.toUpperCase() + ' ▼';
-
-    const flagIcon = document.getElementById('flag-icon');
-    flagIcon.src = `flags/${lang === 'ru' ? 'ru' : lang === 'en' ? 'us' : 'in'}.svg`;
-
+    document.getElementById('language-button').textContent = lang.toUpperCase() + ' ▼';
+    document.getElementById('flag-icon').src = `flags/${lang === 'ru' ? 'ru' : lang === 'en' ? 'us' : 'in'}.svg`;
     updateTexts(lang);
     document.querySelector('.language-switcher').classList.remove('active');
 }
 
 function toggleLanguageDropdown() {
-    const switcher = document.querySelector('.language-switcher');
-    switcher.classList.toggle('active');
+    document.querySelector('.language-switcher').classList.toggle('active');
 }
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    const preloader = document.getElementById('preloader');
+    if (preloader) preloader.style.display = 'none';
+
+    // Восстановление множителя и шанса
+    if (currentMultiplier) {
+        multiplierElement.textContent = `${currentMultiplier}x`;
+        winChanceElement.textContent = `${currentWinChance}%`;
+        winChanceLabel.style.display = 'block';
+        winChanceElement.style.display = 'block';
+    }
+
+    // Проверка прогресса
+    if (isProgressRunning) {
+        const elapsed = Date.now() - progressStartTime;
+        if (elapsed < progressDuration) {
+            const remainingTime = progressDuration - elapsed;
+            progressFill.style.width = `${(elapsed / progressDuration) * 100}%`;
+            getSignalButton.disabled = true;
+            statusText.textContent = translations[currentLang].status_waiting;
+
+            setTimeout(() => {
+                progressFill.style.transition = `width ${remainingTime}ms linear`;
+                progressFill.style.width = '100%';
+            }, 10);
+
+            setTimeout(() => {
+                isProgressRunning = false;
+                localStorage.setItem('isProgressRunning', 'false');
+                getSignalButton.disabled = false;
+                progressFill.style.width = '0';
+                statusText.textContent = translations[currentLang].status_ready;
+                multiplierElement.textContent = '';
+                winChanceElement.textContent = '';
+            }, remainingTime);
+        } else {
+            isProgressRunning = false;
+            localStorage.setItem('isProgressRunning', 'false');
+        }
+    }
+
+    createStars();
+});
+
+// Обработчик кнопки "Получить сигнал"
+getSignalButton.addEventListener('click', () => {
+    if (isProgressRunning) return;
+    clickSound.play();
+
+    const targetMultiplier = generateMultiplier();
+    animateMultiplier(targetMultiplier);
+    getSignalButton.disabled = true;
+    progressBar.style.display = 'block';
+    startProgressAnimation();
+});
+
+// Ресайз окна
+window.addEventListener('resize', () => {
+    document.getElementById('stars-container').innerHTML = '';
+    createStars();
+});
 
 // Установка языка по умолчанию
 setLanguage(currentLang);
-
-// Обработчик изменения размера окна
-window.addEventListener('resize', () => {
-    const starsContainer = document.getElementById('stars-container');
-    starsContainer.innerHTML = '';
-    createStars();
-});
